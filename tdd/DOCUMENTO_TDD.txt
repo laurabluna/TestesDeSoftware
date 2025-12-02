@@ -1,0 +1,357 @@
+================================================================================
+    EXERCÍCIO FIZZ-BUZZ - DESENVOLVIMENTO USANDO TDD
+    Test-Driven Development (Desenvolvimento Orientado a Testes)
+================================================================================
+
+AUTOR: Laura Beatriz Luna Maia
+
+================================================================================
+REGRAS DO JOGO FIZZ-BUZZ
+================================================================================
+
+O jogo FizzBuzz segue as seguintes regras:
+
+1. Qualquer número divisível por 3 é substituído pela palavra "fizz"
+2. Qualquer número divisível por 5 é substituído pela palavra "buzz"
+3. Números divisíveis por AMBOS (3 e 5) são substituídos por "fizzbuzz"
+4. Outros números são retornados como estão (em formato String)
+
+Exemplo de sequência: 
+1, 2, fizz, 4, buzz, fizz, 7, 8, fizz, buzz, 11, fizz, 13, 14, fizzbuzz...
+
+
+================================================================================
+METODOLOGIA TDD - CICLO RED-GREEN-REFACTOR
+================================================================================
+
+TDD segue um ciclo de 3 passos:
+
+1. RED (Vermelho): Escrever um teste que FALHA
+2. GREEN (Verde): Escrever código MÍNIMO para fazer o teste PASSAR
+3. REFACTOR (Refatorar): Melhorar o código mantendo os testes passando
+
+Este documento mostra a ordem cronológica de criação dos testes e código.
+
+
+DOWNLOAD DAS DEPENDÊNCIAS:
+curl -o lib/junit-4.13.2.jar https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar
+curl -o lib/hamcrest-core-1.3.jar https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+
+COMPILAÇÃO:
+javac FizzBuzz.java InterfaceFizzBuzz.java
+javac -cp .:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar FizzBuzzTest.java
+
+EXECUÇÃO DOS TESTES:
+java -cp .:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar org.junit.runner.JUnitCore FizzBuzzTest
+
+RESULTADO OBTIDO:
+JUnit version 4.13.2
+......
+Time: 0.012
+OK (6 tests)
+
+
+================================================================================
+PASSO 1: TESTE PARA NÚMEROS NORMAIS
+================================================================================
+
+STATUS: RED -> GREEN
+
+>>> TESTE CRIADO PRIMEIRO (RED):
+
+@Test
+public void testNumeroNormal() {
+    FizzBuzz fb = new FizzBuzz();
+    assertEquals("1", fb.answer(1));
+}
+
+RESULTADO: FALHA (NotImplementedException)
+
+>>> CÓDIGO IMPLEMENTADO (GREEN):
+
+public String answer(int number) {
+    return String.valueOf(number);
+}
+
+RESULTADO: TESTE PASSA ✓
+
+EXPLICAÇÃO:
+- Primeiro teste: verificar se números normais retornam eles mesmos
+- Implementação mais simples: apenas converter o número para String
+
+
+================================================================================
+PASSO 2: TESTE PARA MÚLTIPLOS DE 3
+================================================================================
+
+STATUS: RED -> GREEN
+
+>>> TESTE CRIADO PRIMEIRO (RED):
+
+@Test
+public void testMultiploDeTres() {
+    FizzBuzz fb = new FizzBuzz();
+    assertEquals("fizz", fb.answer(3));
+}
+
+RESULTADO: FALHA (esperado: "fizz", obtido: "3")
+
+>>> CÓDIGO IMPLEMENTADO (GREEN):
+
+public String answer(int number) {
+    if (number % 3 == 0) {
+        return "fizz";
+    }
+    return String.valueOf(number);
+}
+
+RESULTADO: TODOS OS TESTES PASSAM ✓
+
+EXPLICAÇÃO:
+- Adiciona lógica para verificar divisibilidade por 3
+- Usa operador módulo (%) para verificar resto da divisão
+- Se resto = 0, número é divisível
+
+
+================================================================================
+PASSO 3: TESTE PARA MÚLTIPLOS DE 5
+================================================================================
+
+STATUS: RED -> GREEN
+
+>>> TESTE CRIADO PRIMEIRO (RED):
+
+@Test
+public void testMultiploDeCinco() {
+    FizzBuzz fb = new FizzBuzz();
+    assertEquals("buzz", fb.answer(5));
+}
+
+RESULTADO: FALHA (esperado: "buzz", obtido: "5")
+
+>>> CÓDIGO IMPLEMENTADO (GREEN):
+
+public String answer(int number) {
+    if (number % 3 == 0) {
+        return "fizz";
+    }
+    if (number % 5 == 0) {
+        return "buzz";
+    }
+    return String.valueOf(number);
+}
+
+RESULTADO: TODOS OS TESTES PASSAM ✓
+
+EXPLICAÇÃO:
+- Adiciona verificação para divisibilidade por 5
+- Segue mesma lógica do passo anterior
+
+
+================================================================================
+PASSO 4: TESTE PARA MÚLTIPLOS DE 3 E 5 (PONTO CRÍTICO!)
+================================================================================
+
+STATUS: RED -> GREEN -> REFACTOR
+
+>>> TESTE CRIADO PRIMEIRO (RED):
+
+@Test
+public void testMultiplosDeTresECinco() {
+    FizzBuzz fb = new FizzBuzz();
+    assertEquals("fizzbuzz", fb.answer(15));
+}
+
+RESULTADO: FALHA (esperado: "fizzbuzz", obtido: "fizz")
+
+PROBLEMA IDENTIFICADO:
+- O número 15 é divisível por 3, então retorna "fizz" e para
+- Nunca chega a verificar o "buzz" ou "fizzbuzz"
+- Precisamos verificar 15 (3 E 5) ANTES de verificar 3 ou 5 separadamente
+
+>>> CÓDIGO REFATORADO (GREEN):
+
+public String answer(int number) {
+    // IMPORTANTE: Verificar 15 PRIMEIRO!
+    if (number % 15 == 0) {
+        return "fizzbuzz";
+    }
+    if (number % 3 == 0) {
+        return "fizz";
+    }
+    if (number % 5 == 0) {
+        return "buzz";
+    }
+    return String.valueOf(number);
+}
+
+RESULTADO: TODOS OS TESTES PASSAM ✓
+
+EXPLICAÇÃO:
+- 15 = 3 × 5, então é divisível por ambos
+- Verificação de 15 deve vir ANTES das verificações individuais
+- Esta é a ORDEM CORRETA das condições
+
+
+================================================================================
+PASSO 5: TESTES DE VALIDAÇÃO FINAL
+================================================================================
+
+STATUS: GREEN (todos os testes passam)
+
+>>> TESTES ADICIONAIS CRIADOS:
+
+@Test
+public void testOutrosNumeros() {
+    FizzBuzz fb = new FizzBuzz();
+    assertEquals("7", fb.answer(7));
+    assertEquals("fizz", fb.answer(9));
+    assertEquals("buzz", fb.answer(10));
+    assertEquals("fizzbuzz", fb.answer(30));
+}
+
+@Test
+public void testSequenciaCompleta() {
+    // Testa sequência de 1 a 15
+    String[] esperado = {
+        "1", "2", "fizz", "4", "buzz", 
+        "fizz", "7", "8", "fizz", "buzz",
+        "11", "fizz", "13", "14", "fizzbuzz"
+    };
+    
+    for (int i = 0; i < esperado.length; i++) {
+        assertEquals(esperado[i], fb.answer(i + 1));
+    }
+}
+
+RESULTADO: TODOS OS TESTES PASSAM ✓✓✓
+
+>>> CÓDIGO FINAL (Permanece o mesmo - sem alterações necessárias):
+
+public String answer(int number) {
+    if (number % 15 == 0) {
+        return "fizzbuzz";
+    }
+    if (number % 3 == 0) {
+        return "fizz";
+    }
+    if (number % 5 == 0) {
+        return "buzz";
+    }
+    return String.valueOf(number);
+}
+
+EXPLICAÇÃO:
+- Testes adicionais para garantir robustez
+- Nenhuma alteração necessária no código
+- Implementação está completa e correta!
+
+
+================================================================================
+RESUMO DO DESENVOLVIMENTO TDD
+================================================================================
+
+ORDEM CRONOLÓGICA DE CRIAÇÃO:
+
+1. ✓ Teste: números normais     → Código: retornar número
+2. ✓ Teste: múltiplos de 3      → Código: adicionar verificação de 3
+3. ✓ Teste: múltiplos de 5      → Código: adicionar verificação de 5
+4. ✓ Teste: múltiplos de 3 e 5  → Código: REFATORAR ordem (15 primeiro!)
+5. ✓ Testes: validação completa → Código: SEM ALTERAÇÕES (já funciona!)
+
+TOTAL DE TESTES: 6 métodos de teste
+COBERTURA: 100% do código
+STATUS FINAL: ✓ TODOS OS TESTES PASSANDO
+
+
+================================================================================
+LIÇÕES APRENDIDAS COM TDD
+================================================================================
+
+1. ESCREVER TESTE PRIMEIRO força você a pensar no comportamento desejado
+2. CÓDIGO MÍNIMO evita over-engineering e mantém simplicidade
+3. REFATORAÇÃO SEGURA porque os testes garantem que nada quebrou
+4. ORDEM IMPORTA: a sequência de verificações (15, depois 3, depois 5) é crucial
+5. TDD REVELA PROBLEMAS CEDO: descobrimos o bug do 15 logo no teste
+
+BENEFÍCIOS DO TDD:
+✓ Código testado desde o início
+✓ Design emergente (código evolui naturalmente)
+✓ Documentação viva (testes mostram como usar)
+✓ Confiança para refatorar
+✓ Menos bugs em produção
+
+
+================================================================================
+COMO EXECUTAR O PROJETO
+================================================================================
+
+AMBIENTE UTILIZADO:
+- GitHub Codespaces
+- VS Code
+- Java (javac/java)
+- JUnit 4.13.2 (baixado manualmente, SEM Maven)
+
+COMANDOS PARA CONFIGURAR:
+
+1. Baixar dependências:
+   mkdir -p lib
+   curl -o lib/junit-4.13.2.jar https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar
+   curl -o lib/hamcrest-core-1.3.jar https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+
+2. Compilar o projeto:
+   javac FizzBuzz.java InterfaceFizzBuzz.java
+   javac -cp .:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar FizzBuzzTest.java
+
+3. Executar os testes:
+   java -cp .:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar org.junit.runner.JUnitCore FizzBuzzTest
+
+4. Executar o programa principal:
+   java FizzBuzz
+
+RESULTADO DOS TESTES:
+JUnit version 4.13.2
+......
+Time: 0.012
+
+OK (6 tests)
+
+
+SAÍDA DO PROGRAMA (java FizzBuzz):
+=== Jogo FizzBuzz (1-30) ===
+
+1 -> 1
+2 -> 2
+3 -> fizz
+4 -> 4
+5 -> buzz
+6 -> fizz
+7 -> 7
+8 -> 8
+9 -> fizz
+10 -> buzz
+11 -> 11
+12 -> fizz
+13 -> 13
+14 -> 14
+15 -> fizzbuzz
+16 -> 16
+17 -> 17
+18 -> fizz
+19 -> 19
+20 -> buzz
+21 -> fizz
+22 -> 22
+23 -> 23
+24 -> fizz
+25 -> buzz
+26 -> 26
+27 -> fizz
+28 -> 28
+29 -> 29
+30 -> fizzbuzz
+
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================
